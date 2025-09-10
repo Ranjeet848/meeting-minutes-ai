@@ -1,4 +1,3 @@
-cat > .github/workflows/ai-minutes.yml << 'EOF'
 name: AI-Powered Meeting Minutes
 
 on:
@@ -65,4 +64,3 @@ jobs:
         git add minutes/
         git commit -m "AI-generated minutes $(date +%Y-%m-%d)" || true
         git push || true
-EOF
