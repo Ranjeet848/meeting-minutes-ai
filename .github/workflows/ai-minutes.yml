@@ -8,14 +8,13 @@ on:
         required: true
         type: string
         default: transcripts/test.txt
-  
-  push:
-    paths:
-      - transcripts/**/*.txt
-      - transcripts/**/*.docx
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+  CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
+  CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+  CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
 
 jobs:
   generate-ai-minutes:
@@ -24,8 +23,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -35,58 +32,34 @@ jobs:
     - name: Install dependencies
       run: |
         pip install openai==0.28.0 requests python-docx
-        echo "Dependencies installed successfully"
     
-    - name: Find transcript to process
-      id: find-transcript
+    - name: Process with AI and Confluence
       run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+        echo "Processing transcript..."
+        
+        # Try with Confluence if configured
+        if [ ! -z "${{ env.CONFLUENCE_URL }}" ] && [ ! -z "${{ env.CONFLUENCE_SPACE_KEY }}" ]; then
+          echo "Publishing to Confluence space: ${{ env.CONFLUENCE_SPACE_KEY }}"
+          python scripts/ai_minutes_generator.py "transcripts/test.txt" \
+            --output-dir minutes \
+            --date $(date +%Y-%m-%d) \
+            --openai-key "${{ env.OPENAI_API_KEY }}" \
+            --confluence-url "${{ env.CONFLUENCE_URL }}" \
+            --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
+            --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
+            --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}"
         else
-          TRANSCRIPT_FILE="transcripts/test.txt"
-        fi
-        
-        echo "transcript_file=$TRANSCRIPT_FILE" >> $GITHUB_OUTPUT
-        echo "Found transcript: $TRANSCRIPT_FILE"
-    
-    - name: Process transcript with AI (Local Only)
-      id: process
-      run: |
-        echo "Processing transcript with AI (without Confluence)..."
-        
-        python scripts/ai_minutes_generator.py "${{ steps.find-transcript.outputs.transcript_file }}" \
-          --output-dir minutes \
-          --date $(date +%Y-%m-%d) \
-          --openai-key "${{ env.OPENAI_API_KEY }}"
-        
-        echo "AI processing complete!"
-    
-    - name: Display generated minutes
-      run: |
-        echo "=== Generated Minutes ==="
-        if [ -f minutes/*.html ]; then
-          echo "HTML file generated:"
-          ls -la minutes/*.html
-          echo "--- Preview (first 500 chars) ---"
-          head -c 500 minutes/*.html
-        fi
-        if [ -f minutes/*.json ]; then
-          echo "JSON data generated:"
-          cat minutes/*.json
+          echo "Generating locally only (no Confluence configured)"
+          python scripts/ai_minutes_generator.py "transcripts/test.txt" \
+            --output-dir minutes \
+            --date $(date +%Y-%m-%d) \
+            --openai-key "${{ env.OPENAI_API_KEY }}"
         fi
     
-    - name: Commit generated minutes
-      if: success()
+    - name: Commit and push
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        
         git add minutes/
-        git commit -m "AI-generated meeting minutes for $(date +%Y-%m-%d)" || echo "No changes to commit"
+        git commit -m "AI-generated minutes $(date +%Y-%m-%d)" || true
         git push || true
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: meeting-minutes
-        path: minutes/
