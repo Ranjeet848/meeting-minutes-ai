@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       transcript_file:
-        description: 'Path to transcript file'
+        description: Path to transcript file
         required: true
         type: string
-        default: 'transcripts/test.txt'
+        default: transcripts/test.txt
   
   push:
     paths:
-      - 'transcripts/**/*.txt'
-      - 'transcripts/**/*.docx'
+      - transcripts/**/*.txt
+      - transcripts/**/*.docx
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -55,58 +55,27 @@ jobs:
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
-        elif [ "${{ github.event_name }}" == "push" ]; then
-          TRANSCRIPT_FILE=$(git diff --name-only HEAD HEAD~1 | grep -E 'transcripts/.*\.(txt|docx)' | head -1)
         else
-          TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.docx" \) -not -path "*/archive/*" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
+          TRANSCRIPT_FILE="transcripts/test.txt"
         fi
         
         echo "Checking for file: $TRANSCRIPT_FILE"
         
-        if [ -z "$TRANSCRIPT_FILE" ]; then
-          echo "âŒ No transcript file specified"
-          exit 1
-        fi
-        
         if [ ! -f "$TRANSCRIPT_FILE" ]; then
-          echo "âŒ File does not exist: $TRANSCRIPT_FILE"
+          echo "File does not exist: $TRANSCRIPT_FILE"
           echo "Available files:"
           ls -la transcripts/
           exit 1
         fi
         
         echo "transcript_file=$TRANSCRIPT_FILE" >> $GITHUB_OUTPUT
-        echo "âœ… Found transcript: $TRANSCRIPT_FILE"
+        echo "Found transcript: $TRANSCRIPT_FILE"
     
-    - name: Process transcript with AI and publish to Confluence
+    - name: Process transcript with AI
       id: process
       run: |
-        echo "í´– Processing transcript with AI..."
+        echo "Processing transcript with AI..."
         
         python scripts/ai_minutes_generator.py "${{ steps.find-transcript.outputs.transcript_file }}" \
           --output-dir minutes \
-          --date $(date +%Y-%m-%d) \
-          --openai-key "${{ env.OPENAI_API_KEY }}" \
-          --confluence-url "${{ env.CONFLUENCE_URL }}" \
-          --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
-          --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
-          --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}" \
-          --confluence-parent-id "${{ env.CONFLUENCE_PARENT_PAGE_ID }}" \
-          2>&1 | tee process_output.log
-        
-        # Extract Confluence URL from output
-        CONFLUENCE_URL=$(grep "Confluence Page:" process_output.log | sed 's/.*Confluence Page: //')
-        if [ ! -z "$CONFLUENCE_URL" ]; then
-          echo "confluence_url=$CONFLUENCE_URL" >> $GITHUB_OUTPUT
-          echo "âœ… Published to Confluence: $CONFLUENCE_URL"
-        fi
-    
-    - name: Commit generated minutes
-      if: success()
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        git add minutes/*.html minutes/*.json 2>/dev/null || true
-        git commit -m "í´– AI-generated meeting minutes for $(date +%Y-%m-%d)" || echo "No changes to commit"
-        git push || true
+          --date $(date +%Y-%m-%d)
