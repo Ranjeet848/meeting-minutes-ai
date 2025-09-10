@@ -37,11 +37,20 @@ jobs:
     
     - name: Process with AI and Confluence
       run: |
-        echo "Processing transcript..."
+        echo "Processing transcript: ${{ github.event.inputs.transcript_file }}"
+        
+        # Use the input parameter, not hardcoded path
+        TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+        
+        if [ ! -f "$TRANSCRIPT_FILE" ]; then
+          echo "Error: File not found: $TRANSCRIPT_FILE"
+          ls -la transcripts/
+          exit 1
+        fi
         
         if [ ! -z "${{ env.CONFLUENCE_URL }}" ] && [ ! -z "${{ env.CONFLUENCE_SPACE_KEY }}" ]; then
           echo "Publishing to Confluence space: ${{ env.CONFLUENCE_SPACE_KEY }}"
-          python scripts/ai_minutes_generator.py "transcripts/test.txt" \
+          python scripts/ai_minutes_generator.py "$TRANSCRIPT_FILE" \
             --output-dir minutes \
             --date $(date +%Y-%m-%d) \
             --openai-key "${{ env.OPENAI_API_KEY }}" \
@@ -51,16 +60,25 @@ jobs:
             --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}"
         else
           echo "Generating locally only (no Confluence configured)"
-          python scripts/ai_minutes_generator.py "transcripts/test.txt" \
+          python scripts/ai_minutes_generator.py "$TRANSCRIPT_FILE" \
             --output-dir minutes \
             --date $(date +%Y-%m-%d) \
             --openai-key "${{ env.OPENAI_API_KEY }}"
         fi
+    
+    - name: List generated files
+      run: |
+        echo "Files in minutes folder:"
+        ls -la minutes/
     
     - name: Commit and push
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add minutes/
-        git commit -m "AI-generated minutes $(date +%Y-%m-%d)" || true
-        git push || true
+        if git diff --staged --quiet; then
+          echo "No new files to commit"
+        else
+          git commit -m "AI-generated minutes $(date +%Y-%m-%d)"
+          git push
+        fi
