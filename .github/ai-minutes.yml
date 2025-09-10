@@ -1,0 +1,169 @@
+name: AI-Powered Meeting Minutes to Confluence
+
+on:
+  # Manual trigger with file selection
+  workflow_dispatch:
+    inputs:
+      transcript_file:
+        description: 'Path to transcript file'
+        required: true
+        type: string
+        default: 'transcripts/latest.txt'
+  
+  # Automatic trigger when transcript uploaded
+  push:
+    paths:
+      - 'transcripts/**/*.txt'
+      - 'transcripts/**/*.docx'
+  
+  # Daily check for new transcripts (optional)
+  schedule:
+    - cron: '30 10 * * 1-5'  # 10:30 AM on weekdays
+
+env:
+  # API Keys from secrets
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+  CONFLUENCE_USERNAME: ${{ secrets.CONFLUENCE_USERNAME }}
+  CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_API_TOKEN }}
+  CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
+  CONFLUENCE_PARENT_PAGE_ID: ${{ secrets.CONFLUENCE_PARENT_PAGE_ID }}
+
+jobs:
+  generate-ai-minutes:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        pip install openai requests python-docx
+        echo "Dependencies installed successfully"
+    
+    - name: Find transcript to process
+      id: find-transcript
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          # Manual trigger - use specified file
+          TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+        elif [ "${{ github.event_name }}" == "push" ]; then
+          # Push trigger - get the added/modified file
+          TRANSCRIPT_FILE=$(git diff --name-only HEAD HEAD~1 | grep -E 'transcripts/.*\.(txt|docx)' | head -1)
+        else
+          # Schedule trigger - find most recent unprocessed transcript
+          TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.docx" \) -not -path "*/archive/*" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2)
+        fi
+        
+        if [ -z "$TRANSCRIPT_FILE" ] || [ ! -f "$TRANSCRIPT_FILE" ]; then
+          echo "❌ No transcript file found to process"
+          exit 1
+        fi
+        
+        echo "transcript_file=$TRANSCRIPT_FILE" >> $GITHUB_OUTPUT
+        echo "✅ Found transcript: $TRANSCRIPT_FILE"
+    
+    - name: Process transcript with AI and publish to Confluence
+      id: process
+      run: |
+        echo "🤖 Processing transcript with AI..."
+        
+        python scripts/ai_minutes_generator.py "${{ steps.find-transcript.outputs.transcript_file }}" \
+          --output-dir minutes \
+          --date $(date +%Y-%m-%d) \
+          --openai-key "${{ env.OPENAI_API_KEY }}" \
+          --confluence-url "${{ env.CONFLUENCE_URL }}" \
+          --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
+          --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
+          --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}" \
+          --confluence-parent-id "${{ env.CONFLUENCE_PARENT_PAGE_ID }}" \
+          2>&1 | tee process_output.log
+        
+        # Extract Confluence URL from output
+        CONFLUENCE_URL=$(grep "Confluence Page:" process_output.log | sed 's/.*Confluence Page: //')
+        if [ ! -z "$CONFLUENCE_URL" ]; then
+          echo "confluence_url=$CONFLUENCE_URL" >> $GITHUB_OUTPUT
+          echo "✅ Published to Confluence: $CONFLUENCE_URL"
+        fi
+    
+    - name: Commit generated minutes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add generated files
+        git add minutes/*.html minutes/*.json
+        
+        # Commit with descriptive message
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "🤖 AI-generated meeting minutes for $(date +%Y-%m-%d)"
+          git push
+        fi
+    
+    - name: Archive processed transcript
+      if: success()
+      run: |
+        # Move to archive folder
+        mkdir -p transcripts/archive/$(date +%Y/%m)
+        ARCHIVE_PATH="transcripts/archive/$(date +%Y/%m)/$(basename ${{ steps.find-transcript.outputs.transcript_file }})_$(date +%Y%m%d_%H%M%S)"
+        
+        mv "${{ steps.find-transcript.outputs.transcript_file }}" "$ARCHIVE_PATH"
+        
+        git add -A transcripts/
+        git commit -m "📁 Archive processed transcript: $(basename ${{ steps.find-transcript.outputs.transcript_file }})" || echo "No changes"
+        git push
+    
+    - name: Create summary comment (for PRs)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const output = fs.readFileSync('process_output.log', 'utf8');
+          
+          // Extract summary information
+          const attendees = output.match(/Attendees: (\d+)/)?.[1] || '0';
+          const actionItems = output.match(/Action Items: (\d+)/)?.[1] || '0';
+          const blockers = output.match(/Blockers: (\d+)/)?.[1] || '0';
+          
+          const comment = `## 🤖 AI Meeting Minutes Generated
+          
+          **Summary:**
+          - 👥 Attendees: ${attendees}
+          - ✅ Action Items: ${actionItems}
+          - 🚧 Blockers: ${blockers}
+          
+          **Confluence Page:** ${{ steps.process.outputs.confluence_url || 'Not published' }}
+          
+          ---
+          *Powered by OpenAI GPT-4*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+    
+    - name: Output summary
+      if: always()
+      run: |
+        echo "======================================"
+        echo "        WORKFLOW SUMMARY"
+        echo "======================================"
+        echo "Transcript: ${{ steps.find-transcript.outputs.transcript_file }}"
+        echo "Status: ${{ job.status }}"
+        if [ ! -z "${{ steps.process.outputs.confluence_url }}" ]; then
+          echo "Confluence: ${{ steps.process.outputs.confluence_url }}"
+        fi
+        echo "======================================"
