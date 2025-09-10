@@ -22,13 +22,9 @@ jobs:
     
     steps:
     - name: Checkout repository
-<<<<<<< HEAD
       uses: actions/checkout@v3
-=======
-      uses: actions/checkout@v4
       with:
         fetch-depth: 0
->>>>>>> c512729f7f414acb9d36726619e2f5ea1a05793c
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -43,7 +39,6 @@ jobs:
       run: |
         echo "Processing transcript..."
         
-        # Try with Confluence if configured
         if [ ! -z "${{ env.CONFLUENCE_URL }}" ] && [ ! -z "${{ env.CONFLUENCE_SPACE_KEY }}" ]; then
           echo "Publishing to Confluence space: ${{ env.CONFLUENCE_SPACE_KEY }}"
           python scripts/ai_minutes_generator.py "transcripts/test.txt" \
@@ -69,12 +64,3 @@ jobs:
         git add minutes/
         git commit -m "AI-generated minutes $(date +%Y-%m-%d)" || true
         git push || true
-<<<<<<< HEAD
-=======
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: meeting-minutes
-        path: minutes/
->>>>>>> c512729f7f414acb9d36726619e2f5ea1a05793c
