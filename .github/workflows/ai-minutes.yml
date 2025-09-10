@@ -32,14 +32,6 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Debug - List files
-      run: |
-        echo "=== All files in repository ==="
-        ls -la
-        echo "=== Files in transcripts folder ==="
-        ls -la transcripts/
-        echo "=== Looking for: ${{ github.event.inputs.transcript_file }}"
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -47,7 +39,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pip install openai requests python-docx
+        pip install openai==0.28.0 requests python-docx
         echo "Dependencies installed successfully"
     
     - name: Find transcript to process
@@ -63,7 +55,6 @@ jobs:
         
         if [ ! -f "$TRANSCRIPT_FILE" ]; then
           echo "File does not exist: $TRANSCRIPT_FILE"
-          echo "Available files:"
           ls -la transcripts/
           exit 1
         fi
@@ -78,4 +69,32 @@ jobs:
         
         python scripts/ai_minutes_generator.py "${{ steps.find-transcript.outputs.transcript_file }}" \
           --output-dir minutes \
-          --date $(date +%Y-%m-%d)
+          --date $(date +%Y-%m-%d) \
+          --openai-key "${{ env.OPENAI_API_KEY }}" \
+          --confluence-url "${{ env.CONFLUENCE_URL }}" \
+          --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
+          --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
+          --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}" \
+          --confluence-parent-id "${{ env.CONFLUENCE_PARENT_PAGE_ID }}"
+    
+    - name: Commit generated minutes
+      if: success()
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add minutes/*.html minutes/*.json 2>/dev/null || true
+        git commit -m "AI-generated meeting minutes for $(date +%Y-%m-%d)" || echo "No changes to commit"
+        git push || true
+    
+    - name: Show summary
+      if: always()
+      run: |
+        echo "======================================"
+        echo "        WORKFLOW SUMMARY"
+        echo "======================================"
+        if [ -f minutes/*.html ]; then
+          echo "Minutes generated successfully!"
+          ls -la minutes/
+        fi
+        echo "======================================"
