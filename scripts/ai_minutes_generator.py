@@ -156,24 +156,17 @@ class AIMinutesGenerator:
         Analyze this meeting transcript and create structured meeting minutes. 
         Extract the following information and format it as JSON:
         
-        1. attendees: List of participant names
-        2. individual_updates: For each person, extract:
-           - name: Person's name
-           - yesterday: What they completed yesterday
-           - today: What they're working on today
-           - blockers: Any blockers they mentioned
-        3. action_items: List of action items with:
-           - action: Description of the task
-           - assignee: Person responsible (if mentioned)
-           - due_date: Due date (if mentioned)
-           - priority: high/medium/low (infer from context)
-        4. decisions: List of decisions made during the meeting
-        5. key_discussions: Important topics discussed
-        6. blockers: Overall list of blockers/impediments
-        7. summary: 2-3 sentence executive summary of the meeting
+        Analyze this engineering team standup transcript.
+        Focus on:
+        - Technical tasks and implementations
+        - Blockers and dependencies
+        - Testing and deployment status
+        - Infrastructure decisions
+        Team members: Ranjeet, Hieu, Varshith, Swati
+        Projects: AI meeting pipeline, 5-FU clearance model, Kubernetes deployment
+        Extract updates, action items, and technical decisions.
         
-        Transcript:
-        {transcript}
+        Transcript: {transcript}
         
         Return ONLY valid JSON, no additional text.
         """
