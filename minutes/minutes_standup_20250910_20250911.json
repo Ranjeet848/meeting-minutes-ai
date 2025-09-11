@@ -1,0 +1,58 @@
+{
+  "teamMembers": [
+    "Ranjeet",
+    "Hieu",
+    "Varshith",
+    "Swati"
+  ],
+  "projects": [
+    "AI meeting pipeline",
+    "5-FU clearance model",
+    "Kubernetes deployment"
+  ],
+  "updates": [
+    {
+      "teamMember": "Ranjeet Prajapati",
+      "project": "AI meeting pipeline",
+      "update": "Has run the AI meeting pipeline on the test set. It creates two types of files - HTML and JSON. The pipeline includes attendees, updates, tasks, discussions, and a summary. Plans to test on the real transcript."
+    },
+    {
+      "teamMember": "Hieu Nguyen",
+      "project": "5-FU clearance model",
+      "update": "Found a research paper indicating that blood test results could help predict 5 FU clearance. This could be a new variable to incorporate into the model."
+    },
+    {
+      "teamMember": "Varshith Meesala",
+      "project": "Kubernetes deployment",
+      "update": "Plans to create helm charts for every service to run on Kubernetes and incorporate new changes in the algorithm to check if Totalsec should be run on it. These tasks should be completed by the end of the day."
+    }
+  ],
+  "actionItems": [
+    {
+      "teamMember": "Ranjeet Prajapati",
+      "action": "Test the AI meeting pipeline on the real transcript and update the Confluence API and space key."
+    },
+    {
+      "teamMember": "Hieu Nguyen",
+      "action": "Incorporate the blood test results variable into the 5 FU clearance model."
+    },
+    {
+      "teamMember": "Varshith Meesala",
+      "action": "Create helm charts for every service to run on Kubernetes and incorporate new changes in the algorithm."
+    }
+  ],
+  "technicalDecisions": [
+    {
+      "decision": "The AI meeting pipeline will create two types of files - HTML and JSON, and will be tested on the real transcript.",
+      "teamMember": "Ranjeet Prajapati"
+    },
+    {
+      "decision": "Blood test results will be incorporated as a variable into the 5 FU clearance model.",
+      "teamMember": "Hieu Nguyen"
+    },
+    {
+      "decision": "Helm charts will be created for every service to run on Kubernetes and new changes will be incorporated in the algorithm.",
+      "teamMember": "Varshith Meesala"
+    }
+  ]
+}
