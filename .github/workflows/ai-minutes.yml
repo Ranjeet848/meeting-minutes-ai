@@ -1,13 +1,28 @@
 name: AI-Powered Meeting Minutes
 
 on:
+  # Automated daily trigger
+  schedule:
+    # Runs at 8:00 AM IST (2:30 AM UTC) Monday-Friday
+    - cron: '30 2 * * 1-5'
+  
+  # Manual trigger for testing
   workflow_dispatch:
     inputs:
       transcript_file:
         description: Path to transcript file
         required: true
         type: string
-        default: transcripts/test.txt
+        default: transcripts/latest.txt
+  
+  # Trigger when new transcripts are pushed
+  push:
+    paths:
+      - 'transcripts/**/*.txt'
+      - 'transcripts/**/*.vtt'
+
+permissions:
+  contents: write
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -35,50 +50,49 @@ jobs:
       run: |
         pip install openai==0.28.0 requests python-docx
     
-    - name: Process with AI and Confluence
+    - name: Find today's transcript
+      id: find-transcript
       run: |
-        echo "Processing transcript: ${{ github.event.inputs.transcript_file }}"
+        # For scheduled runs, find today's transcript
+        if [ "${{ github.event_name }}" == "schedule" ]; then
+          # Look for transcript with today's date
+          TODAY=$(date +%Y%m%d)
+          TRANSCRIPT_FILE=$(find transcripts -type f -name "*${TODAY}*" \( -name "*.txt" -o -name "*.vtt" \) | head -1)
+          
+          # If no file for today, get the most recent transcript
+          if [ -z "$TRANSCRIPT_FILE" ]; then
+            TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.vtt" \) -printf '%T@ %p\n' | sort -rn | head -1 | cut -d' ' -f2)
+          fi
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+        else
+          # For push events, process the pushed file
+          TRANSCRIPT_FILE=$(git diff --name-only HEAD HEAD~1 | grep -E 'transcripts/.*\.(txt|vtt)' | head -1)
+        fi
         
-        # Use the input parameter, not hardcoded path
-        TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
-        
-        if [ ! -f "$TRANSCRIPT_FILE" ]; then
-          echo "Error: File not found: $TRANSCRIPT_FILE"
-          ls -la transcripts/
+        if [ -z "$TRANSCRIPT_FILE" ] || [ ! -f "$TRANSCRIPT_FILE" ]; then
+          echo "No transcript found for today"
           exit 1
         fi
         
-        if [ ! -z "${{ env.CONFLUENCE_URL }}" ] && [ ! -z "${{ env.CONFLUENCE_SPACE_KEY }}" ]; then
-          echo "Publishing to Confluence space: ${{ env.CONFLUENCE_SPACE_KEY }}"
-          python scripts/ai_minutes_generator.py "$TRANSCRIPT_FILE" \
-            --output-dir minutes \
-            --date $(date +%Y-%m-%d) \
-            --openai-key "${{ env.OPENAI_API_KEY }}" \
-            --confluence-url "${{ env.CONFLUENCE_URL }}" \
-            --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
-            --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
-            --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}"
-        else
-          echo "Generating locally only (no Confluence configured)"
-          python scripts/ai_minutes_generator.py "$TRANSCRIPT_FILE" \
-            --output-dir minutes \
-            --date $(date +%Y-%m-%d) \
-            --openai-key "${{ env.OPENAI_API_KEY }}"
-        fi
+        echo "transcript_file=$TRANSCRIPT_FILE" >> $GITHUB_OUTPUT
+        echo "Processing: $TRANSCRIPT_FILE"
     
-    - name: List generated files
+    - name: Process with AI
       run: |
-        echo "Files in minutes folder:"
-        ls -la minutes/
+        python scripts/ai_minutes_generator.py "${{ steps.find-transcript.outputs.transcript_file }}" \
+          --output-dir minutes \
+          --date $(date +%Y-%m-%d) \
+          --openai-key "${{ env.OPENAI_API_KEY }}" \
+          --confluence-url "${{ env.CONFLUENCE_URL }}" \
+          --confluence-username "${{ env.CONFLUENCE_USERNAME }}" \
+          --confluence-token "${{ env.CONFLUENCE_API_TOKEN }}" \
+          --confluence-space "${{ env.CONFLUENCE_SPACE_KEY }}"
     
     - name: Commit and push
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add minutes/
-        if git diff --staged --quiet; then
-          echo "No new files to commit"
-        else
-          git commit -m "AI-generated minutes $(date +%Y-%m-%d)"
-          git push
-        fi
+        git commit -m "Meeting minutes for $(date +%Y-%m-%d)" || echo "No changes"
+        git push || true
