@@ -1,0 +1,41 @@
+{
+  "attendees": [
+    "John Smith",
+    "Sarah Johnson",
+    "Mike Chen"
+  ],
+  "individual_updates": [
+    {
+      "name": "John Smith",
+      "yesterday": "completed the API integration",
+      "today": "work on the payment gateway",
+      "blockers": "getting API keys from the payment provider"
+    },
+    {
+      "name": "Sarah Johnson",
+      "yesterday": "finished the frontend dashboard",
+      "today": "integrate with John's API endpoints",
+      "blockers": "None"
+    },
+    {
+      "name": "Mike Chen",
+      "yesterday": "had the client meeting and they approved the design",
+      "today": "work on the database schema",
+      "blockers": "None"
+    }
+  ],
+  "action_items": [],
+  "decisions": [
+    "Use PostgreSQL instead of MySQL"
+  ],
+  "key_discussions": [
+    "API integration",
+    "frontend dashboard",
+    "database schema",
+    "client meeting"
+  ],
+  "blockers": [
+    "getting API keys from the payment provider"
+  ],
+  "summary": "John completed the API integration and will work on the payment gateway but is blocked by the lack of API keys. Sarah finished the frontend dashboard and will integrate with John's API endpoints. Mike had a client meeting where the design was approved and will work on the database schema. The team decided to use PostgreSQL instead of MySQL."
+}
