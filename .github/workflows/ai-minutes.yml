@@ -1,21 +1,17 @@
 name: AI-Powered Meeting Minutes
 
 on:
-  # Automated daily trigger
   schedule:
     # Runs at 8:00 AM IST (2:30 AM UTC) Monday-Friday
     - cron: '30 2 * * 1-5'
   
-  # Manual trigger for testing
   workflow_dispatch:
     inputs:
       transcript_file:
         description: Path to transcript file
-        required: true
+        required: false
         type: string
-        default: transcripts/latest.txt
   
-  # Trigger when new transcripts are pushed
   push:
     paths:
       - 'transcripts/**/*.txt'
@@ -53,25 +49,27 @@ jobs:
     - name: Find today's transcript
       id: find-transcript
       run: |
-        # For scheduled runs, find today's transcript
+        # For scheduled runs, find the most recent transcript
         if [ "${{ github.event_name }}" == "schedule" ]; then
-          # Look for transcript with today's date
-          TODAY=$(date +%Y%m%d)
-          TRANSCRIPT_FILE=$(find transcripts -type f -name "*${TODAY}*" \( -name "*.txt" -o -name "*.vtt" \) | head -1)
-          
-          # If no file for today, get the most recent transcript
-          if [ -z "$TRANSCRIPT_FILE" ]; then
-            TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.vtt" \) -printf '%T@ %p\n' | sort -rn | head -1 | cut -d' ' -f2)
-          fi
+          echo "Scheduled run - finding most recent transcript"
+          # Get the most recent .txt or .vtt file in transcripts folder
+          TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.vtt" \) -not -name ".gitkeep" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
         elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+          if [ -n "${{ github.event.inputs.transcript_file }}" ]; then
+            TRANSCRIPT_FILE="${{ github.event.inputs.transcript_file }}"
+          else
+            # If no input provided, get the most recent file
+            TRANSCRIPT_FILE=$(find transcripts -type f \( -name "*.txt" -o -name "*.vtt" \) -not -name ".gitkeep" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
+          fi
         else
-          # For push events, process the pushed file
+          # For push events
           TRANSCRIPT_FILE=$(git diff --name-only HEAD HEAD~1 | grep -E 'transcripts/.*\.(txt|vtt)' | head -1)
         fi
         
         if [ -z "$TRANSCRIPT_FILE" ] || [ ! -f "$TRANSCRIPT_FILE" ]; then
-          echo "No transcript found for today"
+          echo "No transcript found"
+          echo "Contents of transcripts folder:"
+          ls -la transcripts/
           exit 1
         fi
         
