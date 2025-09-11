@@ -1,0 +1,252 @@
+I change spotlight.
+
+Hieu Nguyen: Spotify.
+
+Ranjeet Prajapati: Are you? How are you?
+
+Hieu Nguyen: Oh.
+
+Hieu Nguyen: Camera. Oh, here. OK,
+I'm trying to change the background on
+
+Ranjeet Prajapati: How are you doing?
+
+Hieu Nguyen: the thing.
+
+Ranjeet Prajapati: OK.
+
+Hieu Nguyen: Um.
+
+Ranjeet Prajapati: OK,
+that that looks better actually your
+
+Ranjeet Prajapati: previous background.
+
+Hieu Nguyen: Uh, it's OK. It's like, oh, hello Wahid,
+I think you're disconnected.
+
+Ranjeet Prajapati: I.
+
+Ranjeet Prajapati: Hello.
+
+Ranjeet Prajapati: What happens? We got stuck.
+
+Hieu Nguyen: Yeah, I think he's frozen.
+
+Varshith Meesala: Good morning. Good afternoon.
+
+Ranjeet Prajapati: Good afternoon. Good morning.
+
+Hieu Nguyen: I mean.
+
+Varshith Meesala: Oh, it's. Oh, Swati is joining today.
+Yeah. OK, OK, got it. All right.
+
+Ranjeet Prajapati: So.
+
+Hieu Nguyen: Yeah, yeah,
+she's she's on a train to somewhere.
+
+Ranjeet Prajapati: Yeah.
+
+Ranjeet Prajapati: She is on leave today actually.
+
+Hieu Nguyen: Hmm.
+
+Varshith Meesala: That's all right.
+
+Ranjeet Prajapati: Yeah.
+
+Ranjeet Prajapati: So I will start first. So uh,
+I have uh run the uh AI uh.
+
+Hieu Nguyen: Mm.
+
+Ranjeet Prajapati: Meeting pipeline actually.
+So it runs on the test actually.
+
+Ranjeet Prajapati: Let me show you the screen just a second
+now.
+
+Ranjeet Prajapati: Yeah, so it runs on the test set.
+It does it.
+
+Ranjeet Prajapati: So it will create the two types of file.
+One is HTML and one is a JSON file.
+
+Ranjeet Prajapati: So hold actually like this actually.
+
+Ranjeet Prajapati: Who are the attendees? Uh,
+what are the updates?
+
+Ranjeet Prajapati: What are their name and what their task?
+
+Ranjeet Prajapati: And uh,
+discussion and the last is a summary
+
+Ranjeet Prajapati: point.
+
+Ranjeet Prajapati: So this will be the whole structure for
+the this pipeline actually.
+
+Hieu Nguyen: Mm.
+
+Ranjeet Prajapati: So I will test on the real.
+
+Hieu Nguyen: Yeah.
+
+Ranjeet Prajapati: Transcript also,
+so I will do it now actually.
+
+Varshith Meesala: Does it work for to put it in confluence?
+
+Ranjeet Prajapati: Yeah, yeah, it goes on to the conference.
+Actually I've I have also updated the
+
+Ranjeet Prajapati: conference API and the conference space
+key.
+
+Ranjeet Prajapati: Those needed for that and I have given
+and it runs actually properly.
+
+Varshith Meesala: OK, why is there an HTML file?
+What's the use of the HTML file?
+
+Ranjeet Prajapati: No, I was just, you know,
+for the test purpose actually not I will.
+
+Ranjeet Prajapati: Remove that after that, yeah.
+
+Hieu Nguyen: Oh.
+
+Varshith Meesala: OK, 'cause we want it, yeah,
+we want it in a markdown format,
+
+Ranjeet Prajapati: I'll just keep it with the.
+
+Varshith Meesala: not like HTML.
+
+Ranjeet Prajapati: Yeah, yeah, yeah. I will do that on the.
+
+Varshith Meesala: All right, perfect. That looks good.
+
+Ranjeet Prajapati: Yeah, OK.
+
+Hieu Nguyen: Right,
+so I think I found a research paper that
+
+Hieu Nguyen: indicates one of the.
+
+Hieu Nguyen: Blood test results could help us to
+better predict 5 FU clearance.
+
+Hieu Nguyen: And that's like commonly take like they
+always take a blood test right before the
+
+Hieu Nguyen: chemo anyways.
+So that's like one of the variables we
+
+Ranjeet Prajapati: Yeah.
+
+Hieu Nguyen: could incorporate into the model more
+like the former genetic side of things,
+
+Hieu Nguyen: yeah.
+
+Varshith Meesala: Yeah, so I have two things to do today.
+One is to one is to put everything.
+
+Hieu Nguyen: Mm-hmm.
+
+Varshith Meesala: One is to create helm charts for every
+service so we can run it on Kubernetes.
+
+Hieu Nguyen: H.
+
+Varshith Meesala: Another is to incorporate the new changes
+in the algorithm where we can now check
+
+Ranjeet Prajapati: OK.
+
+Hieu Nguyen: Hmm.
+
+Varshith Meesala: whether we want to run Totalsec on it or
+not.
+
+Hieu Nguyen: Hmm.
+
+Varshith Meesala: That's Yep, that should be done by today.
+Shouldn't take long.
+
+Hieu Nguyen: Yeah, no,
+I think you have like access to the data
+
+Hieu Nguyen: and like the machines. Oh,
+you still need the account, right?
+
+Varshith Meesala: For not really. I mean I the.
+
+Hieu Nguyen: Yeah,
+you should just use your computer for
+
+Hieu Nguyen: time being probably.
+
+Varshith Meesala: For for the time being it works.
+It's just slow. It works.
+
+Hieu Nguyen: Yeah.
+
+Varshith Meesala: Once I have the setup anything then when
+we are load testing then we can use it.
+
+Hieu Nguyen: Yeah, right.
+
+Varshith Meesala: And yeah,
+it's not like you only I can run it,
+
+Varshith Meesala: you can run it as well.
+So we also have to because it's gonna be
+
+Hieu Nguyen: Mm-hmm. Yeah.
+
+Varshith Meesala: running on the cloud.
+We also have to check.
+
+Varshith Meesala: We we have to check.
+
+Ranjeet Prajapati: Yeah.
+
+Varshith Meesala: Tested on cloud, not local. So yeah.
+
+Hieu Nguyen: Hmm. Oh yeah. Oh yeah.
+It would be better if you do it on clouds
+
+Hieu Nguyen: versus like having to manually install
+everything locally, yeah.
+
+Varshith Meesala: We won't have to.
+We won't have to manually until
+
+Hieu Nguyen: H.
+
+Hieu Nguyen: And.
+
+Varshith Meesala: everything.
+But I understand what you mean. Yep,
+
+Hieu Nguyen: Hmm.
+
+Varshith Meesala: that's all. Good meeting, guys. Actually,
+this is how our standups are supposed to
+
+Hieu Nguyen: No, not be very fake, yeah.
+
+Varshith Meesala: be. Yeah, all right. Have fun.
+
+Hieu Nguyen: Mhm.
+
+Ranjeet Prajapati: Have fun, yeah.
+
+Varshith Meesala: Bye, bye.
+
+Ranjeet Prajapati: Thank.
