@@ -1,0 +1,55 @@
+{
+  "meeting_minutes": {
+    "team_members": [
+      "Ranjeet",
+      "Hieu",
+      "Varshith",
+      "Swati"
+    ],
+    "projects": [
+      "AI meeting pipeline",
+      "5-FU clearance model",
+      "Kubernetes deployment"
+    ],
+    "updates": [
+      {
+        "name": "John Smith",
+        "time": "09:15:00",
+        "completed_tasks": [
+          "API integration"
+        ],
+        "today_tasks": [
+          "Work on the payment gateway"
+        ],
+        "blockers": [
+          "Getting API keys from the payment provider"
+        ]
+      },
+      {
+        "name": "Sarah Johnson",
+        "time": "09:15:30",
+        "completed_tasks": [
+          "Frontend dashboard"
+        ],
+        "today_tasks": [
+          "Integrate with John's API endpoints"
+        ],
+        "blockers": []
+      },
+      {
+        "name": "Mike Chen",
+        "time": "09:16:00",
+        "completed_tasks": [
+          "Client meeting and design approval"
+        ],
+        "today_tasks": [
+          "Work on the database schema"
+        ],
+        "blockers": [],
+        "technical_decisions": [
+          "Use PostgreSQL instead of MySQL"
+        ]
+      }
+    ]
+  }
+}
