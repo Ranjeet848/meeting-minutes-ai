@@ -1,0 +1,43 @@
+{
+  "team_members": [
+    "Ranjeet",
+    "Hieu",
+    "Varshith",
+    "Swati"
+  ],
+  "projects": [
+    "AI meeting pipeline",
+    "5-FU clearance model",
+    "Kubernetes deployment"
+  ],
+  "updates": [
+    {
+      "name": "John Smith",
+      "time": "09:15:00",
+      "yesterday": "Completed the API integration.",
+      "today": "Will work on the payment gateway.",
+      "blockers": "Blocked on getting API keys from the payment provider."
+    },
+    {
+      "name": "Sarah Johnson",
+      "time": "09:15:30",
+      "yesterday": "Finished the frontend dashboard.",
+      "today": "Will integrate with John's API endpoints.",
+      "blockers": "No blockers."
+    },
+    {
+      "name": "Mike Chen",
+      "time": "09:16:00",
+      "yesterday": "Had the client meeting and they approved the design.",
+      "today": "Will work on the database schema.",
+      "blockers": "No blockers."
+    }
+  ],
+  "technical_decisions": [
+    {
+      "name": "Mike Chen",
+      "time": "09:16:00",
+      "decision": "Decided to use PostgreSQL instead of MySQL."
+    }
+  ]
+}
